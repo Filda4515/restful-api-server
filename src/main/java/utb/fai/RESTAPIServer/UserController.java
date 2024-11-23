@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,12 +26,12 @@ public class UserController {
 
     @GetMapping("/getUser")
     public ResponseEntity<MyUser> getUserById(@RequestParam(name = "id") Long id) {
-    MyUser user = userRepository.findById(id).orElse(null);
-    if (user == null) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        MyUser user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
-    return new ResponseEntity<>(user, HttpStatus.OK);
-}
 
     @PostMapping("/createUser")
     public ResponseEntity<MyUser> createUser(@RequestBody MyUser newUser) {
@@ -45,5 +46,23 @@ public class UserController {
         }
     }
 
-    // TODO: Define remaining endpoints in the same way. For id parameter use annotation @RequestParam with name "id" and for MyUser structure use @RequestBody.
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<String> deleteUser(@RequestParam(name = "id") Long id) {
+        MyUser user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return new ResponseEntity<>("ERROR: User doesn't exist.", HttpStatus.BAD_REQUEST);
+        }
+        userRepository.deleteById(id);
+        return new ResponseEntity<>("INFO: User deleted successfully.", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<String> deleteAllUsers() {
+        try {
+            userRepository.deleteAll();
+            return new ResponseEntity<>("INFO: All users deleted successfully.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("ERROR occurred while deleting users.", HttpStatus.BAD_REQUEST);
+        }
+    }
 }
