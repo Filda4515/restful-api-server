@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +43,29 @@ public class UserController {
             return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/editUser")
+    public ResponseEntity<String> editUser(@RequestParam(name = "id") Long id, @RequestBody MyUser updatedUser) {
+        MyUser user = userRepository.findById(id).orElse(null);
+        
+        if (user == null) {
+            return new ResponseEntity<>("ERROR: User not found.", HttpStatus.NOT_FOUND);
+        }
+
+        if (!updatedUser.isUserDataValid()) {
+            return new ResponseEntity<>("ERROR: Invalid user data.", HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            user.setName(updatedUser.getName());
+            user.setEmail(updatedUser.getEmail());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            userRepository.save(user);
+            return new ResponseEntity<>("INFO: User updated successfully.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("ERROR: Could not update user.", HttpStatus.BAD_REQUEST);
         }
     }
 
